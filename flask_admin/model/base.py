@@ -824,6 +824,16 @@ class BaseModelView(BaseView, ActionsMixin):
         if choices_map:
             return choices_map.get(value) or value
 
+        # Likely this is a -TOMANY relationship, so let's format these items too.
+        if isinstance(value, list):
+            # Convert to real list, to avoid DB-operation side effects.
+            value = list(value)
+            
+            for i, val in enumerate(value):
+                type_fmt = self.column_type_formatters.get(type(val))
+                if type_fmt is not None:
+                    value[i] = type_fmt(val)
+        
         type_fmt = self.column_type_formatters.get(type(value))
         if type_fmt is not None:
             value = type_fmt(value)
